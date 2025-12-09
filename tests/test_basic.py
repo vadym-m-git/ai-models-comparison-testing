@@ -1,22 +1,7 @@
 import pytest
-import os
-from openai import OpenAI
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Model constant for all tests
 MODEL = "gpt-4o-mini"
-
-
-@pytest.fixture
-def openai_client():
-    """Setup OpenAI client for all tests"""
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        pytest.skip("OPENAI_API_KEY not found in .env")
-    return OpenAI(api_key=api_key)
-
 
 def test_model_responds(openai_client):
     """TEST #1: Verify model returns a response"""
@@ -86,49 +71,50 @@ def test_temperature_affects_creativity(openai_client):
 
     print(f"\n✅ TEST #3 PASSED - Both temperatures produced responses")
 
+
 def test_max_tokens_limit(openai_client):
     """TEST #4: Model respects token limits"""
-    
+
     response = openai_client.chat.completions.create(
         model=MODEL,
-        messages=[{
-            "role": "user",
-            "content": "Write a long story about a dragon"
-        }],
+        messages=[{"role": "user", "content": "Write a long story about a dragon"}],
         max_tokens=10,  # Very short limit
-        temperature=0
+        temperature=0,
     )
-    
+
     answer = response.choices[0].message.content
     word_count = len(answer.split())
-    
+
     print(f"\n  📏 Response: '{answer}'")
     print(f"  📊 Word count: {word_count}")
-    
+
     # With max_tokens=10, response should be very brief
     assert word_count < 15, f"Response too long: {word_count} words"
-    
+
     print(f"\n✅ TEST #4 PASSED - Response limited to {word_count} words")
+
 
 def test_json_format_output(openai_client):
     """TEST #5: Model can return valid JSON"""
-    
+
     import json
-    
+
     response = openai_client.chat.completions.create(
         model=MODEL,
-        messages=[{
-            "role": "user",
-            "content": """Return this information as valid JSON:
+        messages=[
+            {
+                "role": "user",
+                "content": """Return this information as valid JSON:
             Name: Alice
             Age: 30
             City: Paris
             
-            Use keys: name, age, city"""
-        }],
-        temperature=0
+            Use keys: name, age, city""",
+            }
+        ],
+        temperature=0,
     )
-    
+
     answer = response.choices[0].message.content
     print(f"\n  📄 Raw response: {answer}")
 
