@@ -1,5 +1,7 @@
 import time
 from openai import RateLimitError
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
+
 
 def call_with_delay(client, **kwargs):
     """Call OpenAI API with a delay to avoid rate limits."""
@@ -11,3 +13,58 @@ def call_with_delay(client, **kwargs):
         except RateLimitError as e:
             print(f"\n⚠️  Rate limit hit, retrying in 1s: {e}")
             time.sleep(1.0)
+
+
+def classify_sentiment(client, model, text, temperature=0):
+    """
+    Classify sentiment using OpenAI API.
+    Returns normalized prediction: 'positive', 'negative', or 'neutral'.
+    """
+    response = call_with_delay(
+        client,
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": f"Classify as: positive, negative, or neutral\n\n{text}\n\nSentiment:",
+            }
+        ],
+        temperature=temperature,
+    )
+
+    prediction = response.choices[0].message.content.strip().lower()
+
+    # Normalize prediction
+    if prediction not in ["positive", "negative", "neutral"]:
+        if "positive" in prediction:
+            return "positive"
+        elif "negative" in prediction:
+            return "negative"
+        else:
+            return "neutral"
+
+    return prediction
+
+
+def compute_metrics(predictions, ground_truth):
+    """
+    Compute classification metrics from predictions and ground truth.
+    Returns dict with accuracy, precision, recall, F1, and numeric labels.
+    """
+    label_map = {"positive": 0, "negative": 1, "neutral": 2}
+    y_true = [label_map[label] for label in ground_truth]
+    y_pred = [label_map[pred] for pred in predictions]
+
+    accuracy = accuracy_score(y_true, y_pred)
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        y_true, y_pred, average="weighted", zero_division=0
+    )
+
+    return {
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        "y_true": y_true,
+        "y_pred": y_pred,
+    }

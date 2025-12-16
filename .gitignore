@@ -21,3 +21,6 @@ reports/*.xml
 .vscode/
 .idea/
 *.swp
+
+# macOS system files
+.DS_Store

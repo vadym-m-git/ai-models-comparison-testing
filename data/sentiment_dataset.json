@@ -148,5 +148,50 @@
     "id": 30,
     "text": "Adequate. Meets basic requirements.",
     "label": "neutral"
+  },
+  {
+    "id": 40,
+    "text": "It’s not the worst I’ve used, but I did end up keeping it.",
+    "label": "positive"
+  },
+  {
+    "id": 41,
+    "text": "After some initial issues, it works fine now.",
+    "label": "positive"
+  },
+  {
+    "id": 42,
+    "text": "I was skeptical at first, but it turned out better than expected.",
+    "label": "positive"
+  },
+  {
+    "id": 43,
+    "text": "It could be better. I had to fix a few things myself.",
+    "label": "negative"
+  },
+  {
+    "id": 44,
+    "text": "Not as good as advertised, but I guess you get what you pay for.",
+    "label": "negative"
+  },
+  {
+    "id": 45,
+    "text": "Mixed feelings, but overall I wouldn’t recommend it.",
+    "label": "negative"
+  },
+  {
+    "id": 46,
+    "text": "Sometimes it works great, sometimes not so much.",
+    "label": "neutral"
+  },
+  {
+    "id": 47,
+    "text": "It’s neither here nor there. Depends on your expectations.",
+    "label": "neutral"
+  },
+  {
+    "id": 48,
+    "text": "I don’t love it or hate it. It’s just a product.",
+    "label": "neutral"
   }
 ]
