@@ -1,0 +1,77 @@
+[
+  {
+    "text": "Well, it's not the worst thing I've ever bought.",
+    "expected": ["neutral", "negative"],
+    "description": "Faint praise (actually negative)"
+  },
+  {
+    "text": "Thanks for nothing! Really appreciate the 'help' 🙄",
+    "expected": ["negative"],
+    "description": "Heavy sarcasm with emoji"
+  },
+  {
+    "text": "I'm not saying it's bad, but I've had better experiences with products that cost half as much.",
+    "expected": ["negative"],
+    "description": "Indirect comparison (subtle negative)"
+  },
+  {
+    "text": "Finally arrived after 3 months. Guess I'll use it now that I don't need it anymore.",
+    "expected": ["negative", "neutral"],
+    "description": "Passive-aggressive (timing issue)"
+  },
+  {
+    "text": "It does exactly what it says on the box.",
+    "expected": ["neutral", "positive"],
+    "description": "Ambiguous - could be satisfied or factual"
+  },
+  {
+    "text": "Sure, it's 'premium quality' if that's what we're calling it these days.",
+    "expected": ["negative"],
+    "description": "Air quotes sarcasm"
+  },
+  {
+    "text": "My 5-year-old loves it. Me? Not so much.",
+    "expected": ["neutral", "negative"],
+    "description": "Split opinion (focus on reviewer)"
+  },
+  {
+    "text": "I wanted to love it. I really did.",
+    "expected": ["negative"],
+    "description": "Implied disappointment"
+  },
+  {
+    "text": "It's fine. Does the job. Nothing special.",
+    "expected": ["neutral"],
+    "description": "Neutral but slightly dismissive"
+  },
+  {
+    "text": "Interesting choice by the manufacturer.",
+    "expected": ["neutral", "negative"],
+    "description": "Vague criticism disguised as neutral"
+  },
+  {
+    "text": "This is the worst best product ever!",
+    "expected": ["neutral", "negative"],
+    "description": "Contradictory terms (likely negative)"
+  },
+  {
+    "text": "I love how much I hate using this thing.",
+    "expected": ["negative"],
+    "description": "Sarcastic contradiction"
+  },
+  {
+    "text": "It broke but customer service fixed it quickly and I'm happy now.",
+    "expected": ["positive"],
+    "description": "Journey with positive resolution"
+  },
+  {
+    "text": "For the price, I suppose I can't complain too much.",
+    "expected": ["neutral", "negative"],
+    "description": "Reluctant acceptance"
+  },
+  {
+    "text": "AMAZING!!! 😍😍😍",
+    "expected": ["positive"],
+    "description": "Strong positive with emojis (baseline)"
+  }
+]

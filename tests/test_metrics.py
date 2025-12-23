@@ -39,7 +39,7 @@ def test_sentiment_classification_basic(openai_client, sentiment_dataset):
     accuracy = correct / len(test_cases)
     print(f"\n  📊 Accuracy: {correct}/{len(test_cases)} = {accuracy:.2%}")
 
-    assert accuracy >= 0.60, f"Accuracy too low: {accuracy:.2%}"
+    assert accuracy >= 0.80, f"Accuracy too low: {accuracy:.2%}"
 
     print(f"\n✅ TEST #11 PASSED - Basic classification working")
 
@@ -108,8 +108,8 @@ def test_sentiment_classification_full_metrics(openai_client, sentiment_dataset)
         print(f"     None! Perfect classification! 🎉")
 
     # Assertions
-    assert metrics["accuracy"] > 0.70, f"Accuracy too low: {metrics['accuracy']:.3f}"
-    assert metrics["f1"] > 0.70, f"F1-score too low: {metrics['f1']:.3f}"
+    assert metrics["accuracy"] > 0.85, f"Accuracy too low: {metrics['accuracy']:.3f}"
+    assert metrics["f1"] > 0.85, f"F1-score too low: {metrics['f1']:.3f}"
 
     print(f"\n✅ TEST #12 PASSED - F1-Score: {metrics['f1']:.3f}")
 
@@ -154,7 +154,7 @@ def test_per_class_metrics(openai_client, sentiment_dataset):
 
     # Check if any class is performing poorly
     min_f1 = min(f1)
-    assert min_f1 > 0.60, f"Some class has F1 < 0.60: {min_f1:.3f}"
+    assert min_f1 > 0.75, f"Some class has F1 < 0.75: {min_f1:.3f}"
 
     print(f"\n✅ TEST #13 PASSED - All classes performing adequately")
 
@@ -194,7 +194,7 @@ def test_compare_models(openai_client, sentiment_dataset, model_name):
     print(f"  {'='*60}")
 
     # Both models should perform reasonably well
-    assert metrics["f1"] > 0.70, f"{model_name} F1-score too low: {metrics['f1']:.3f}"
+    assert metrics["f1"] > 0.85, f"{model_name} F1-score too low: {metrics['f1']:.3f}"
 
     print(f"\n✅ TEST #14 PASSED - {model_name}: F1={metrics['f1']:.3f}")
 
@@ -277,59 +277,10 @@ def test_classification_latency(openai_client, sentiment_dataset):
     print(f"\n✅ TEST #16 PASSED - Avg latency: {avg_latency:.3f}s")
 
 
-def test_edge_cases(openai_client):
+def test_edge_cases(openai_client, edge_cases):
     """TEST #17: Test classification on edge cases and tricky examples"""
 
-    edge_cases = [
-        {
-            "text": "This is the worst best product ever!",
-            "expected": ["positive", "negative", "neutral"],
-            "description": "Mixed sentiment",
-        },
-        {
-            "text": "I guess it's not terrible?",
-            "expected": ["neutral", "positive"],
-            "description": "Double negative",
-        },
-        {"text": "Meh.", "expected": ["neutral"], "description": "Minimal text"},
-        {
-            "text": "AMAZING!!! 😍😍😍",
-            "expected": ["positive"],
-            "description": "Emojis and caps",
-        },
-        {
-            "text": "It broke but customer service fixed it quickly and I'm happy now.",
-            "expected": ["positive", "neutral"],
-            "description": "Complex narrative",
-        },
-        {
-            "text": "I can't say I hated it, but I wouldn't buy it again.",
-            "expected": ["neutral"],
-            "description": "Subtle negative",
-        },
-        {
-            "text": "The packaging was beautiful, but the product didn't work at all.",
-            "expected": ["negative"],
-            "description": "Positive start, negative outcome",
-        },
-        {
-            "text": "It's a product.",
-            "expected": ["neutral"],
-            "description": "Generic statement",
-        },
-        {
-            "text": "I waited weeks for it to arrive, but now that it's here, I guess it's fine.",
-            "expected": ["neutral"],
-            "description": "Long wait, underwhelming",
-        },
-        {
-            "text": "I love how much I hate using this thing.",
-            "expected": ["negative"],
-            "description": "Sarcastic contradiction",
-        },
-    ]
-
-    print(f"\n  🧪 Testing {len(edge_cases)} edge cases:")
+    print(f"\n  🧪 Testing OpenAI on {len(edge_cases)} edge cases:")
 
     results = []
     for i, case in enumerate(edge_cases, 1):
@@ -351,8 +302,8 @@ def test_edge_cases(openai_client):
         f"\n  📊 Edge case success rate: {success_rate:.1%} ({sum(results)}/{len(results)})"
     )
 
-    # At least 60% should be handled correctly
-    assert success_rate >= 0.60, f"Too many edge case failures: {success_rate:.1%}"
+    # At least 60% should be handled correctly (edge cases are challenging)
+    assert success_rate >= 0.60, f"Edge case success rate too low: {success_rate:.1%}"
 
     print(f"\n✅ TEST #17 PASSED - Edge cases handled reasonably")
 

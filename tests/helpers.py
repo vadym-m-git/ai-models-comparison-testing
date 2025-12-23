@@ -1,5 +1,6 @@
 import time
 from openai import RateLimitError
+from anthropic import RateLimitError as AnthropicRateLimitError
 from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 
 
@@ -15,24 +16,49 @@ def call_with_delay(client, **kwargs):
             time.sleep(1.0)
 
 
-def classify_sentiment(client, model, text, temperature=0):
-    """
-    Classify sentiment using OpenAI API.
-    Returns normalized prediction: 'positive', 'negative', or 'neutral'.
-    """
-    response = call_with_delay(
-        client,
-        model=model,
-        messages=[
-            {
-                "role": "user",
-                "content": f"Classify as: positive, negative, or neutral\n\n{text}\n\nSentiment:",
-            }
-        ],
-        temperature=temperature,
-    )
+def call_claude_with_delay(client, **kwargs):
+    """Call Anthropic Claude API with a delay to avoid rate limits."""
+    while True:
+        try:
+            response = client.messages.create(**kwargs)
+            time.sleep(0.15)  # 150ms between calls
+            return response
+        except AnthropicRateLimitError as e:
+            print(f"\n⚠️  Rate limit hit, retrying in 1s: {e}")
+            time.sleep(1.0)
 
-    prediction = response.choices[0].message.content.strip().lower()
+
+def classify_sentiment(client, model, text, temperature=0, provider="openai"):
+    """
+    Classify sentiment using OpenAI or Anthropic API.
+    Returns normalized prediction: 'positive', 'negative', or 'neutral'.
+    
+    Args:
+        client: OpenAI or Anthropic client
+        model: Model name
+        text: Text to classify
+        temperature: Temperature setting (0-1)
+        provider: "openai" or "anthropic"
+    """
+    prompt = f"Classify as: positive, negative, or neutral\n\n{text}\n\nSentiment:"
+    
+    if provider == "anthropic":
+        response = call_claude_with_delay(
+            client,
+            model=model,
+            max_tokens=10,
+            temperature=temperature,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        prediction = response.content[0].text.strip().lower()
+    else:  # openai
+        response = call_with_delay(
+            client,
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temperature,
+        )
+        prediction = response.choices[0].message.content.strip().lower()
 
     # Normalize prediction
     if prediction not in ["positive", "negative", "neutral"]:

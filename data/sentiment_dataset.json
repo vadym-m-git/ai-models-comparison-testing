@@ -82,7 +82,7 @@
   {
     "id": 17,
     "text": "I'm love in it. Just what I needed.",
-    "label": "negative"
+    "label": "positive"
   },
   {
     "id": 18,
@@ -102,7 +102,7 @@
   {
     "id": 21,
     "text": "Super, totally recommended.",
-    "label": "neutral"
+    "label": "positive"
   },
   {
     "id": 22,
@@ -137,7 +137,7 @@
   {
     "id": 28,
     "text": "Price is too high for this product.",
-    "label": "positive"
+    "label": "negative"
   },
   {
     "id": 29,
@@ -152,12 +152,12 @@
   {
     "id": 40,
     "text": "It’s not the worst I’ve used, but I did end up keeping it.",
-    "label": "positive"
+    "label": "neutral"
   },
   {
     "id": 41,
     "text": "After some initial issues, it works fine now.",
-    "label": "positive"
+    "label": "neutral"
   },
   {
     "id": 42,
@@ -172,7 +172,7 @@
   {
     "id": 44,
     "text": "Not as good as advertised, but I guess you get what you pay for.",
-    "label": "negative"
+    "label": "neutral"
   },
   {
     "id": 45,
