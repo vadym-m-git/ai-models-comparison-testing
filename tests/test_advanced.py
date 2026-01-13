@@ -5,6 +5,7 @@ Advanced AI testing scenarios:
 - Edge cases (long text, special characters)
 - Cost tracking
 - Error handling (rate limits, invalid models, malformed requests, timeouts)
+- Authentication (invalid/missing API keys)
 """
 
 import pytest
@@ -689,3 +690,74 @@ def test_handles_network_timeout():
             "Should raise APITimeoutError"
 
     print(f"\n✅ TEST #34 PASSED - Network timeout handled correctly")
+
+
+def test_invalid_api_key():
+    """TEST #35: Reject invalid API keys with clear authentication error"""
+
+    print(f"\n  🔑 Testing invalid API key handling...\n")
+
+    from openai import OpenAI, AuthenticationError
+
+    # Create client with fake/invalid API key
+    fake_api_key = "sk-fake-invalid-key-12345678901234567890"
+    print(f"  Attempting to use invalid API key: '{fake_api_key[:20]}...'")
+
+    invalid_client = OpenAI(api_key=fake_api_key)
+
+    try:
+        response = invalid_client.chat.completions.create(
+            model=OPEN_AI_MODEL,
+            messages=[{"role": "user", "content": "Test"}],
+            temperature=0
+        )
+        assert False, "Should have raised AuthenticationError for invalid API key"
+
+    except AuthenticationError as e:
+        print(f"  ✓ AuthenticationError raised as expected")
+        print(f"  ✓ Error message: {str(e)[:100]}...")
+
+        error_str = str(e).lower()
+        assert "api" in error_str or "key" in error_str or "auth" in error_str or "401" in error_str, \
+            f"Error should mention authentication issue: {str(e)}"
+
+        print(f"  ✓ Error message clearly indicates authentication failure")
+
+    print(f"\n✅ TEST #35 PASSED - Invalid API key rejected correctly")
+
+
+def test_missing_api_key():
+    """TEST #36: Handle missing API key configuration with clear error"""
+
+    print(f"\n  🚫 Testing missing API key handling...\n")
+
+    from openai import OpenAI, AuthenticationError
+    import os
+
+    # Try to create client with empty string as API key (force no fallback)
+    print(f"  Attempting to use OpenAI client with empty API key...")
+
+    # Use empty string to ensure no fallback to env variables
+    invalid_client = OpenAI(api_key="")
+
+    # Try to make API call with empty key
+    try:
+        response = invalid_client.chat.completions.create(
+            model=OPEN_AI_MODEL,
+            messages=[{"role": "user", "content": "Test"}],
+            temperature=0
+        )
+        assert False, "Should have raised error for missing API key"
+
+    except AuthenticationError as e:
+        print(f"  ✓ AuthenticationError raised as expected")
+        print(f"  ✓ Error message: {str(e)[:100]}...")
+
+        # Verify error mentions API key or authentication issue
+        error_str = str(e).lower()
+        assert "api" in error_str or "key" in error_str or "auth" in error_str or "401" in error_str or "provide" in error_str, \
+            f"Error should mention missing API key: {str(e)}"
+
+        print(f"  ✓ Error message clearly indicates missing/invalid API key")
+
+    print(f"\n✅ TEST #36 PASSED - Missing API key handled correctly")
