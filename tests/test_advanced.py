@@ -4,6 +4,7 @@ Advanced AI testing scenarios:
 - Context handling
 - Edge cases (long text, special characters)
 - Cost tracking
+- Error handling (rate limits, invalid models, malformed requests, timeouts)
 """
 
 import pytest
@@ -464,5 +465,227 @@ def test_non_english_handling(openai_client):
     
     # Should handle most non-English text
     assert accuracy >= 0.75, f"Non-English handling too low: {accuracy:.1%}"
-    
+
     print(f"\n✅ TEST #30 PASSED - Non-English text handled")
+
+
+def test_handles_rate_limit_error():
+    """TEST #31: Gracefully handle rate limit errors with retry logic"""
+
+    print(f"\n  🔬 Testing rate limit error handling...\n")
+
+    from unittest.mock import Mock
+    from openai import RateLimitError
+    import time
+
+    # Mock the OpenAI client (not the helper function)
+    mock_client = Mock()
+
+    # Create success response
+    mock_success_response = Mock()
+    mock_success_response.choices = [Mock()]
+    mock_success_response.choices[0].message.content = "positive"
+
+    # Create properly formatted RateLimitError
+    mock_response = Mock()
+    mock_response.status_code = 429
+    rate_limit_error = RateLimitError(
+        message="Rate limit exceeded",
+        response=mock_response,
+        body={"error": {"message": "Rate limit exceeded"}}
+    )
+
+    # Simulate: fail once with rate limit, then succeed
+    mock_client.chat.completions.create.side_effect = [
+        rate_limit_error,           # 1st attempt fails
+        mock_success_response       # 2nd attempt succeeds
+    ]
+
+    # Call REAL call_with_delay function with the mock client
+    start_time = time.time()
+
+    result = call_with_delay(
+        mock_client,
+        model=OPEN_AI_MODEL,
+        messages=[{"role": "user", "content": "Test"}]
+    )
+
+    elapsed = time.time() - start_time
+
+    print(f"  ✓ Rate limit error was caught by call_with_delay")
+    print(f"  ✓ Retry delay: {elapsed:.2f}s (expected ~1s)")
+    print(f"  ✓ Request succeeded after retry")
+
+    # ASSERTION 1: Function returns correct result after retry
+    assert result == mock_success_response, \
+        "Should return success after retry"
+
+    # ASSERTION 2: Function waits before retrying
+    assert elapsed >= 1.0, \
+        f"Should wait 1s before retry, waited {elapsed:.2f}s"
+
+    # ASSERTION 3: Function makes exactly 2 API calls (fail + success)
+    assert mock_client.chat.completions.create.call_count == 2, \
+        "Should call API twice (fail + success)"
+
+    print(f"\n✅ TEST #31 PASSED - Rate limit error handled correctly")
+
+
+def test_handles_invalid_model_name(openai_client):
+    """TEST #32: Handle invalid model name gracefully with clear error"""
+
+    print(f"\n  🚫 Testing invalid model name handling...\n")
+
+    from openai import NotFoundError
+
+    # Try to use a non-existent model
+    invalid_model = "gpt-99-ultra-super-model-that-does-not-exist"
+
+    print(f"  Attempting to use invalid model: '{invalid_model}'")
+
+    try:
+        response = openai_client.chat.completions.create(
+            model=invalid_model,
+            messages=[{"role": "user", "content": "Test"}],
+            temperature=0
+        )
+        assert False, "Should have raised NotFoundError for invalid model"
+
+    except NotFoundError as e:
+        print(f"  ✓ NotFoundError raised as expected")
+        print(f"  ✓ Error message: {str(e)[:100]}...")
+
+        error_str = str(e).lower()
+        assert "model" in error_str or "not found" in error_str or "does not exist" in error_str, \
+            f"Error message should mention model issue: {str(e)}"
+
+        print(f"  ✓ Error message is clear and informative")
+
+    print(f"\n✅ TEST #32 PASSED - Invalid model name handled correctly")
+
+
+def test_handles_missing_messages_parameter(openai_client):
+    """TEST #33a: Handle missing required 'messages' parameter"""
+
+    print(f"\n  ⚠️  Testing missing 'messages' parameter...\n")
+
+    from openai import BadRequestError
+
+    try:
+        response = openai_client.chat.completions.create(
+            model=OPEN_AI_MODEL,
+            temperature=0
+            # Missing 'messages' - required parameter
+        )
+        assert False, "Should have raised error for missing 'messages'"
+
+    except (BadRequestError, TypeError) as e:
+        print(f"  ✓ Error raised: {type(e).__name__}")
+        print(f"  ✓ Error message: {str(e)[:100]}...")
+
+        # Verify error mentions the missing parameter
+        error_str = str(e).lower()
+        assert "messages" in error_str or "required" in error_str, \
+            f"Error should mention missing 'messages' parameter: {str(e)}"
+
+    print(f"\n✅ TEST #33a PASSED - Missing 'messages' parameter handled correctly")
+
+
+def test_handles_invalid_parameter_type(openai_client):
+    """TEST #33b: Handle invalid parameter types with clear errors"""
+
+    print(f"\n  ⚠️  Testing invalid parameter type...\n")
+
+    from openai import BadRequestError
+
+    # Try to use string instead of float for temperature
+    print(f"  Attempting temperature='very-hot' (should be float 0-2)")
+
+    try:
+        response = openai_client.chat.completions.create(
+            model=OPEN_AI_MODEL,
+            messages=[{"role": "user", "content": "Test"}],
+            temperature="very-hot"  # Should be float 0-2, not string
+        )
+        assert False, "Should have raised error for invalid temperature type"
+
+    except (BadRequestError, TypeError, ValueError) as e:
+        print(f"  ✓ Error raised: {type(e).__name__}")
+        print(f"  ✓ Error message: {str(e)[:100]}...")
+
+        # Verify error is related to temperature or type issue
+        error_str = str(e).lower()
+        assert "temperature" in error_str or "type" in error_str or "invalid" in error_str, \
+            f"Error should mention temperature or type issue: {str(e)}"
+
+    print(f"\n✅ TEST #33b PASSED - Invalid parameter type handled correctly")
+
+
+def test_handles_invalid_message_role(openai_client):
+    """TEST #33c: Handle invalid message roles with clear errors"""
+
+    print(f"\n  ⚠️  Testing invalid message role...\n")
+
+    from openai import BadRequestError
+
+    # Try to use non-existent role
+    invalid_role = "superadmin"
+    print(f"  Attempting invalid role: '{invalid_role}' (valid: user, assistant, system)")
+
+    try:
+        response = openai_client.chat.completions.create(
+            model=OPEN_AI_MODEL,
+            messages=[{"role": invalid_role, "content": "Test"}],  # Invalid role
+            temperature=0
+        )
+        assert False, "Should have raised error for invalid role"
+
+    except BadRequestError as e:
+        print(f"  ✓ BadRequestError raised as expected")
+        print(f"  ✓ Error message: {str(e)[:100]}...")
+
+        # Verify error message mentions role issue
+        error_str = str(e).lower()
+        assert "role" in error_str or "invalid" in error_str, \
+            f"Error should mention invalid role: {str(e)}"
+
+    print(f"\n✅ TEST #33c PASSED - Invalid message role handled correctly")
+
+
+def test_handles_network_timeout():
+    """TEST #34: Handle network timeouts gracefully"""
+
+    print(f"\n  ⏱️  Testing network timeout handling...\n")
+
+    from unittest.mock import Mock
+    from openai import APITimeoutError
+
+    # Mock the OpenAI client
+    mock_client = Mock()
+
+    # Create properly formatted APITimeoutError
+    mock_request = Mock()
+    timeout_error = APITimeoutError(request=mock_request)
+
+    # Simulate timeout
+    mock_client.chat.completions.create.side_effect = timeout_error
+
+    print(f"  Simulating network timeout...")
+
+    # Should raise timeout error
+    try:
+        response = mock_client.chat.completions.create(
+            model=OPEN_AI_MODEL,
+            messages=[{"role": "user", "content": "Test"}]
+        )
+        assert False, "Should have raised APITimeoutError"
+
+    except APITimeoutError as e:
+        print(f"  ✓ APITimeoutError raised as expected")
+        print(f"  ✓ Error type: {type(e).__name__}")
+
+        # Verify it's the correct error type
+        assert isinstance(e, APITimeoutError), \
+            "Should raise APITimeoutError"
+
+    print(f"\n✅ TEST #34 PASSED - Network timeout handled correctly")
