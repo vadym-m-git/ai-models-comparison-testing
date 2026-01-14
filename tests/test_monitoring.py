@@ -19,7 +19,7 @@ OPEN_AI_MODEL_TO_COMARE = "gpt-4o"
 def test_response_time_benchmark(openai_client, sentiment_dataset):
     """Benchmark response times across different test sizes"""
 
-    print(f"\n  ⚡ Running response time benchmark...\n")
+    print("\n  ⚡ Running response time benchmark...\n")
 
     test_sizes = [5, 10, 20]
     results = {}
@@ -69,7 +69,7 @@ def test_response_time_benchmark(openai_client, sentiment_dataset):
 
     # Compare with previous results
     if previous_results:
-        print(f"\n  📊 Comparison with previous run:")
+        print("\n  📊 Comparison with previous run:")
         prev_avg = previous_results["results"]["10_samples"]["avg_time_per_request"]
         curr_avg = results["10_samples"]["avg_time_per_request"]
         diff_pct = ((curr_avg - prev_avg) / prev_avg) * 100
@@ -84,18 +84,18 @@ def test_response_time_benchmark(openai_client, sentiment_dataset):
     # Assert reasonable performance
     assert results["10_samples"]["avg_time_per_request"] < 3.0, "Response time too slow"
 
-    print(f"\n✅ PASSED - Benchmark complete")
+    print("\n✅ PASSED - Benchmark complete")
 
 
 def test_batch_vs_sequential_performance(openai_client, sentiment_dataset):
     """Compare batch vs sequential processing performance"""
 
-    print(f"\n  🏁 Comparing batch vs sequential processing...\n")
+    print("\n  🏁 Comparing batch vs sequential processing...\n")
 
     test_cases = sentiment_dataset[:10]
 
     # Sequential processing
-    print(f"  Testing sequential processing...")
+    print("  Testing sequential processing...")
     start_sequential = time.time()
 
     for case in test_cases:
@@ -104,7 +104,7 @@ def test_batch_vs_sequential_performance(openai_client, sentiment_dataset):
     sequential_time = time.time() - start_sequential
 
     # Batch processing
-    print(f"  Testing batch processing...")
+    print("  Testing batch processing...")
     start_batch = time.time()
 
     batch_prompt = "Classify each review as positive, negative, or neutral. Respond with only the labels separated by commas.\n\n"
@@ -112,7 +112,7 @@ def test_batch_vs_sequential_performance(openai_client, sentiment_dataset):
         batch_prompt += f"{i}. {case['text']}\n"
     batch_prompt += "\nLabels (comma-separated):"
 
-    response = call_with_delay(
+    call_with_delay(
         openai_client,
         model=OPEN_AI_MODEL,
         messages=[{"role": "user", "content": batch_prompt}],
@@ -123,7 +123,7 @@ def test_batch_vs_sequential_performance(openai_client, sentiment_dataset):
 
     speedup = sequential_time / batch_time
 
-    print(f"\n  📊 Results:")
+    print("\n  📊 Results:")
     print(
         f"  Sequential: {sequential_time:.2f}s ({sequential_time/len(test_cases):.3f}s per item)"
     )
@@ -144,7 +144,7 @@ def test_batch_vs_sequential_performance(openai_client, sentiment_dataset):
 def test_model_regression_detection(openai_client, sentiment_dataset):
     """Detect regression in model performance"""
 
-    print(f"\n  🔍 Running regression detection...\n")
+    print("\n  🔍 Running regression detection...\n")
 
     test_cases = sentiment_dataset[:15]
 
@@ -198,22 +198,22 @@ def test_model_regression_detection(openai_client, sentiment_dataset):
         print(f"  Change: {diff:+.1%}")
 
         if diff < -0.10:  # More than 10% drop
-            print(f"  ⚠️  WARNING: Significant regression detected!")
+            print("  ⚠️  WARNING: Significant regression detected!")
         elif diff > 0:
-            print(f"  ✓ Improvement detected")
+            print("  ✓ Improvement detected")
         else:
-            print(f"  ✓ Stable performance")
+            print("  ✓ Stable performance")
 
         # Fail if major regression
         assert diff > -0.15, f"Major regression: {diff:.1%} drop"
 
-    print(f"\n✅ PASSED - No major regression detected")
+    print("\n✅ PASSED - No major regression detected")
 
 
 def test_concurrent_requests_handling(openai_client, sentiment_dataset):
     """Test handling of concurrent requests"""
 
-    print(f"\n  🔀 Testing concurrent request handling...\n")
+    print("\n  🔀 Testing concurrent request handling...\n")
 
     import concurrent.futures
 
@@ -275,7 +275,7 @@ def test_concurrent_requests_handling(openai_client, sentiment_dataset):
 def test_token_usage_tracking(openai_client, sentiment_dataset):
     """Track token usage across tests"""
 
-    print(f"\n  🎫 Tracking token usage...\n")
+    print("\n  🎫 Tracking token usage...\n")
 
     test_cases = sentiment_dataset[:10]
 
@@ -302,11 +302,11 @@ def test_token_usage_tracking(openai_client, sentiment_dataset):
         total_completion_tokens += usage.completion_tokens
         total_tokens += usage.total_tokens
 
-    avg_prompt = total_prompt_tokens / len(test_cases)
-    avg_completion = total_completion_tokens / len(test_cases)
+    total_prompt_tokens / len(test_cases)
+    total_completion_tokens / len(test_cases)
     avg_total = total_tokens / len(test_cases)
 
-    print(f"  📊 Token Usage Statistics:")
+    print("  📊 Token Usage Statistics:")
     print(f"  Total prompt tokens: {total_prompt_tokens:,}")
     print(f"  Total completion tokens: {total_completion_tokens:,}")
     print(f"  Total tokens: {total_tokens:,}")
@@ -317,7 +317,7 @@ def test_token_usage_tracking(openai_client, sentiment_dataset):
     output_cost = (total_completion_tokens / 1_000_000) * 0.600
     total_cost = input_cost + output_cost
 
-    print(f"\n  💰 Cost Analysis:")
+    print("\n  💰 Cost Analysis:")
     print(f"  Input cost: ${input_cost:.6f}")
     print(f"  Output cost: ${output_cost:.6f}")
     print(f"  Total cost: ${total_cost:.6f}")
@@ -341,18 +341,18 @@ def test_token_usage_tracking(openai_client, sentiment_dataset):
     with open("reports/token_usage.json", "w") as f:
         json.dump(token_data, f, indent=2)
 
-    print(f"\n  💾 Token usage saved to: reports/token_usage.json")
+    print("\n  💾 Token usage saved to: reports/token_usage.json")
 
     # Assert reasonable token usage
     assert avg_total < 50, f"Token usage too high: {avg_total:.1f}"
 
-    print(f"\n✅ PASSED - Token usage tracked")
+    print("\n✅ PASSED - Token usage tracked")
 
 
 def test_error_rate_monitoring(openai_client, sentiment_dataset):
     """Monitor error rates and failures"""
 
-    print(f"\n  📉 Monitoring error rates...\n")
+    print("\n  📉 Monitoring error rates...\n")
 
     test_cases = sentiment_dataset[:20]
 
@@ -385,12 +385,12 @@ def test_error_rate_monitoring(openai_client, sentiment_dataset):
     error_rate = failed / len(test_cases)
     success_rate = successful / len(test_cases)
 
-    print(f"  📊 Error Rate Analysis:")
+    print("  📊 Error Rate Analysis:")
     print(f"  Successful: {successful}/{len(test_cases)} ({success_rate:.1%})")
     print(f"  Failed: {failed}/{len(test_cases)} ({error_rate:.1%})")
 
     if errors:
-        print(f"\n  ⚠️  Errors encountered:")
+        print("\n  ⚠️  Errors encountered:")
         for err in errors[:3]:  # Show first 3
             print(f"    - Index {err['index']}: {err['error']}")
 
@@ -409,18 +409,19 @@ def test_error_rate_monitoring(openai_client, sentiment_dataset):
     with open("reports/error_tracking.json", "w") as f:
         json.dump(error_data, f, indent=2)
 
-    print(f"\n  💾 Error tracking saved to: reports/error_tracking.json")
+    print("\n  💾 Error tracking saved to: reports/error_tracking.json")
 
     # Error rate should be very low
     assert error_rate < 0.05, f"Error rate too high: {error_rate:.1%}"
 
-    print(f"\n✅ PASSED - Error rate acceptable")
+    print("\n✅ PASSED - Error rate acceptable")
+
 
 @pytest.mark.skip(reason="Dataset too small for meaningful model comparison")
 def test_model_version_comparison(openai_client, sentiment_dataset):
     """Compare different model versions automatically"""
 
-    print(f"\n  🔄 Comparing model versions...\n")
+    print("\n  🔄 Comparing model versions...\n")
 
     models = [OPEN_AI_MODEL, OPEN_AI_MODEL_TO_COMARE]
 
@@ -453,7 +454,7 @@ def test_model_version_comparison(openai_client, sentiment_dataset):
         print(f"    Accuracy: {accuracy:.1%}, Time: {elapsed:.2f}s")
 
     # Print comparison
-    print(f"\n  📊 Model Comparison:")
+    print("\n  📊 Model Comparison:")
     print(f"  {'Model':<20} {'Accuracy':<12} {'Total Time':<12} {'Avg Time'}")
     print(f"  {'-'*60}")
 
@@ -469,7 +470,7 @@ def test_model_version_comparison(openai_client, sentiment_dataset):
     with open("reports/model_comparison_automated.json", "w") as f:
         json.dump(comparison_data, f, indent=2)
 
-    print(f"\n  💾 Comparison saved to: reports/model_comparison_automated.json")
+    print("\n  💾 Comparison saved to: reports/model_comparison_automated.json")
 
     # Both models should meet minimum standards
     for model, metrics in results.items():
@@ -483,4 +484,4 @@ def test_model_version_comparison(openai_client, sentiment_dataset):
             metrics["avg_time"] < 3.0
         ), f"{model} too slow: {metrics['avg_time']:.2f}s per request (expected < 3s)"
 
-    print(f"\n✅ PASSED - Model comparison complete")
+    print("\n✅ PASSED - Model comparison complete")

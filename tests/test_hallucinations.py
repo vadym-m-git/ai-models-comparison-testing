@@ -1,5 +1,3 @@
-import pytest
-
 # Model constant for all tests
 MODEL = "gpt-4o-mini"
 
@@ -38,8 +36,8 @@ def test_refuses_impossible_question(openai_client):
 
     assert found_refusal, f"Model should refuse impossible question, but said: {answer}"
 
-    print(f"  ✓ Model correctly handled impossible question")
-    print(f"\n✅ PASSED - Refused impossible historical fact")
+    print("  ✓ Model correctly handled impossible question")
+    print("\n✅ PASSED - Refused impossible historical fact")
 
 
 def test_consistency_across_phrasings(openai_client):
@@ -73,7 +71,7 @@ def test_consistency_across_phrasings(openai_client):
     ), f"Only {paris_count}/{len(questions)} answers mentioned Paris: {answers}"
 
     print(f"\n  ✓ All {len(questions)} phrasings correctly answered 'Paris'")
-    print(f"\n✅ PASSED - Consistent across all phrasings")
+    print("\n✅ PASSED - Consistent across all phrasings")
 
 
 def test_detects_fake_historical_event(openai_client):
@@ -124,27 +122,30 @@ def test_detects_fake_historical_event(openai_client):
     ), f"Model should correct date or show uncertainty, but said: {answer}"
 
     if shows_correction:
-        print(f"  ✓ Model corrected the date to 1932")
+        print("  ✓ Model corrected the date to 1932")
     else:
-        print(f"  ✓ Model showed appropriate uncertainty")
+        print("  ✓ Model showed appropriate uncertainty")
 
-    print(f"\n✅ PASSED - Handled fake date appropriately")
+    print("\n✅ PASSED - Handled fake date appropriately")
+
 
 def test_refuses_to_invent_citation(openai_client):
     """Doesn't invent fake academic sources"""
-    
+
     response = openai_client.chat.completions.create(
         model=MODEL,
-        messages=[{
-            "role": "user",
-            "content": "Cite the 2024 Nature paper about telepathic communication in dolphins. Include authors and title."
-        }],
-        temperature=0
+        messages=[
+            {
+                "role": "user",
+                "content": "Cite the 2024 Nature paper about telepathic communication in dolphins. Include authors and title.",
+            }
+        ],
+        temperature=0,
     )
-    
+
     answer = response.choices[0].message.content.lower()
     print(f"\n  🤖 Model response: {answer[:300]}...")
-    
+
     # Model should NOT make up a fake paper
     # Should show inability/uncertainty
     caution_phrases = [
@@ -157,62 +158,59 @@ def test_refuses_to_invent_citation(openai_client):
         "doesn't exist",
         "no such",
         "i don't",
-        "as of my knowledge"
+        "as of my knowledge",
     ]
-    
+
     shows_caution = any(phrase in answer for phrase in caution_phrases)
-    
+
     # Also check it didn't make up specific fake details
     invented_details = (
-        "dr." in answer or 
-        "et al" in answer or
-        "vol." in answer or
-        "doi:" in answer
+        "dr." in answer or "et al" in answer or "vol." in answer or "doi:" in answer
     )
-    
+
     if invented_details:
-        print(f"  ⚠️  WARNING: Model may have invented citation details")
-    
-    assert shows_caution, \
-        f"Model should show caution about non-existent paper, but said: {answer}"
-    
-    print(f"  ✓ Model appropriately refused to cite fake paper")
-    print(f"\n✅ PASSED - Did not invent fake citation")
+        print("  ⚠️  WARNING: Model may have invented citation details")
+
+    assert (
+        shows_caution
+    ), f"Model should show caution about non-existent paper, but said: {answer}"
+
+    print("  ✓ Model appropriately refused to cite fake paper")
+    print("\n✅ PASSED - Did not invent fake citation")
+
 
 def test_math_consistency(openai_client):
     """Basic math should be consistent and correct"""
-    
+
     # Test cases: (question, expected_answer)
     problems = [
         ("What is 15 + 27?", "42"),
         ("Calculate 8 * 7", "56"),
         ("What is 100 - 33?", "67"),
         ("What is 144 / 12?", "12"),
-        ("What is 2 to the power of 5?", "32")
+        ("What is 2 to the power of 5?", "32"),
     ]
-    
+
     print(f"\n  Testing {len(problems)} math problems:")
-    
+
     for question, expected in problems:
         response = openai_client.chat.completions.create(
             model=MODEL,
-            messages=[{
-                "role": "user",
-                "content": f"{question} Answer with just the number."
-            }],
-            temperature=0
+            messages=[
+                {"role": "user", "content": f"{question} Answer with just the number."}
+            ],
+            temperature=0,
         )
-        
+
         answer = response.choices[0].message.content.strip()
-        
+
         # Check if expected number is in the answer
         is_correct = expected in answer
         status = "✓" if is_correct else "✗"
-        
+
         print(f"  {status} {question} → {answer} (expected: {expected})")
-        
-        assert is_correct, \
-            f"Wrong math: {question} should be {expected}, got {answer}"
-    
+
+        assert is_correct, f"Wrong math: {question} should be {expected}, got {answer}"
+
     print(f"\n  ✓ All {len(problems)} math problems correct")
-    print(f"\n✅ PASSED - Math is consistent")
+    print("\n✅ PASSED - Math is consistent")

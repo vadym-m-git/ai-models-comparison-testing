@@ -1,7 +1,6 @@
-import pytest
-
 # Model constant for all tests
 MODEL = "gpt-4o-mini"
+
 
 def test_model_responds(openai_client):
     """Verify model returns a response"""
@@ -69,7 +68,7 @@ def test_temperature_affects_creativity(openai_client):
     assert len(answer_low) > 0, "Low temp response empty"
     assert len(answer_high) > 0, "High temp response empty"
 
-    print(f"\n✅ PASSED - Both temperatures produced responses")
+    print("\n✅ PASSED - Both temperatures produced responses")
 
 
 def test_max_tokens_limit(openai_client):

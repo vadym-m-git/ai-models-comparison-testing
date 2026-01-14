@@ -32,7 +32,7 @@ def classify_sentiment(client, model, text, temperature=0, provider="openai"):
     """
     Classify sentiment using OpenAI or Anthropic API.
     Returns normalized prediction: 'positive', 'negative', or 'neutral'.
-    
+
     Args:
         client: OpenAI or Anthropic client
         model: Model name
@@ -41,14 +41,14 @@ def classify_sentiment(client, model, text, temperature=0, provider="openai"):
         provider: "openai" or "anthropic"
     """
     prompt = f"Classify as: positive, negative, or neutral\n\n{text}\n\nSentiment:"
-    
+
     if provider == "anthropic":
         response = call_claude_with_delay(
             client,
             model=model,
             max_tokens=10,
             temperature=temperature,
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
         )
         prediction = response.content[0].text.strip().lower()
     else:  # openai
